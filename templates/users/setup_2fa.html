@@ -1,0 +1,29 @@
+<!-- setup_2fa.html -->
+
+{% extends "base.html" %}
+
+{% block title %}
+    Setup 2FA
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>Setup Two-Factor Authentication</h2>
+
+        <p>Follow the instructions below to set up Two-Factor Authentication (2FA):</p>
+
+        <ol>
+            <li>Scan the QR code below using your authenticator app.</li>
+            <li>Enter the generated code into your app to complete the setup.</li>
+        </ol>
+
+        <!-- Display the QR code -->
+        <p><img src="{{ qrcode(uri, box_size=5, border=5) }}"></p>
+
+{#        <p>If you have trouble scanning the QR code, you can manually enter the key:</p>#}
+{#        <code>{{ manual_code }}</code>#}
+
+        <!-- Link to the Login page -->
+        <p>Once set up go to the <a href="{{ url_for('users.login') }}"><u>Login</u></a> page</p>
+    </div>
+{% endblock %}
