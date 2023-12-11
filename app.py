@@ -1,10 +1,12 @@
 # IMPORTS
+from functools import wraps
+
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_qrcode import QRcode
 import os
 from dotenv import load_dotenv
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 
 load_dotenv()
 
@@ -17,9 +19,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['RECAPTCHA_PUBLIC_KEY'] = os.getenv('RECAPTCHA_PUBLIC_KEY')
 app.config['RECAPTCHA_PRIVATE_KEY'] = os.getenv('RECAPTCHA_PRIVATE_KEY')
 
+@app.errorhandler(403)
+def internal_error(error):
+    return render_template('403.html'), 403
+
 # initialise database
 db = SQLAlchemy(app)
 qrcode = QRcode (app)
+
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.role not in roles:
+                return render_template('403.html')
+            return f(*args, **kwargs)
+
+        return wrapped
+    return wrapper
 
 
 # HOME PAGE VIEW

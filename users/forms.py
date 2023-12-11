@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField
 from wtforms.validators import email, Length, DataRequired, EqualTo
 from wtforms.validators import ValidationError
 from wtforms.validators import NoneOf
@@ -60,5 +60,11 @@ class LoginForm(FlaskForm):
     recaptcha = RecaptchaField()
     submit = SubmitField()
 
+class PasswordForm(FlaskForm):
+    current_password = PasswordField(id='password', validators=[DataRequired()])
+    show_password = BooleanField('Show password', id='check')
+    new_password = PasswordField(validators=[DataRequired(), Length(min=6, max=12, message="Must be between 6 and 12 characters in length"), validate_password])
+    confirm_new_password = PasswordField(validators=[DataRequired(), EqualTo('new_password', message='Both new password fields must be equal')])
+    submit = SubmitField('Change Password')
 
 
