@@ -10,3 +10,8 @@ flask_qrcode
 pyotp
 python-dotenv
 MarkupSafe
+from cryptography.fernet import Fernet
+fernet
+rsa
+bcrypt
+

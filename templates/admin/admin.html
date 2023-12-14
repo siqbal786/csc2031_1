@@ -96,6 +96,45 @@
         </form>
     </div>
 </div>
+
+
+        <h5 class="title is-4">User Activity Logs</h5>
+    <div class="box">
+        {% if current_user_logs %}
+            <div class="field">
+                <table class="table">
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Registered On</th>
+                        <th>Current Login</th>
+                        <th>Last Login</th>
+                    </tr>
+                    {% for user in current_user_logs %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.registered_on.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            {% if user.current_login %}
+                                    <td>{{ user.current_login.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                {% else %}
+                                    <td>Not yet logged in</td>
+                                {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+        {% if not current_user_logs %}
+        <form action="/view_user_activity">
+            <div>
+                <button class="button is-info is-centered">View User Activity</button>
+            </div>
+        </form>
+        {% endif %}
+        </div>
+
+
 <div class="column is-8 is-offset-2" id="test">
     <h4 class="title is-4">Security Logs</h4>
     <div class="box">
@@ -117,8 +156,9 @@
                 <button class="button is-info is-centered">View Logs</button>
             </div>
         </form>
+
         </div>
     </div>
-
+</div>
 
 {% endblock %}

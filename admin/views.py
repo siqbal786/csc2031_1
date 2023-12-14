@@ -1,6 +1,7 @@
 # IMPORTS
+import logging
 import random
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
 
 from app import db, requires_roles
@@ -164,3 +165,12 @@ def logs():
         content.reverse()
 
     return render_template('admin/admin.html', logs=content, name=current_user.firstname)
+
+# view user activity
+@admin_blueprint.route('/view_user_activity')
+@login_required
+@requires_roles('admin')
+def view_user_activity():
+    current_users = User.query.filter_by(role='user').all()
+
+    return render_template('admin/admin.html', name=current_user.firstname, current_user_logs=current_users)

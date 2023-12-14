@@ -1,8 +1,11 @@
 # IMPORTS
-from flask import Blueprint, render_template, flash, redirect, url_for, session
+import logging
+from datetime import datetime
+
+from flask import Blueprint, render_template, flash, redirect, url_for, session, request
 from markupsafe import Markup
 
-from app import db
+from app import db, app, logger
 from models import User
 from users.forms import RegisterForm, LoginForm, PasswordForm
 from flask_login import login_user, logout_user, login_required, current_user
@@ -28,6 +31,11 @@ def register():
             flash('Email address already exists')
             return render_template('users/register.html', form=form)
 
+        logging.warning('SECURITY - User registration [%s, %s]',
+                        form.email.data,
+                        request.remote_addr
+                        )
+
         # create a new user with the form data
         new_user = User(email=form.email.data,
                         firstname=form.firstname.data,
@@ -51,7 +59,7 @@ def register():
 
 
 # view user login
-@users_blueprint.route('/login', methods= ['GET', 'POST'])
+@users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
 
@@ -59,39 +67,62 @@ def login():
         session['Login_attempts'] = 0
 
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data) .first()
-
+        user = User.query.filter_by(email=form.email.data).first()
         if not user or not user.verify_password(form.password.data) or not user.verify_pin(form.pin.data):
+            logging.warning('SECURITY - Invalid Login [%s, %s]', form.email.data, request.remote_addr)
             session['Login_attempts'] += 1
-
             if session.get('Login_attempts') >= 3:
-                flash(Markup('Number of incorrect login attempts exceeded. Please click <a href = "/reset" >here</a> to reset.'))
+                flash(Markup(
+                    'Number of incorrect login attempts exceeded. Please click <a href = "/reset" >here</a> to reset.'))
                 return render_template('users/login.html')
 
             flash('Please check your login details and try again, '
-                   '{} login attempts remaining'.format(3-session.get('Login_attempts')))
+                  '{} login attempts remaining'.format(3 - session.get('Login_attempts')))
             return render_template('users/login.html', form=form)
 
         login_user(user)
+
+        logging.warning('SECURITY - Log in [%s, %s, %s]',
+                        current_user.id,
+                        current_user.email,
+                        request.remote_addr
+                        )
+
         session['Login_attempts'] = 0
-        if current_user.role == user:
-            return redirect(url_for('lottery.lottery'))
-        else:
+        current_user.last_login = current_user.current_login
+        current_user.current_login = datetime.now()
+        db.session.commit()
+        if current_user.role == "admin":
+            logging.warning('SECURITY - Unauthorised role based access [%s, %s, %s]',
+                            current_user.id,
+                            current_user.email,
+                            request.remote_addr
+                            )
             return redirect(url_for('admin.admin'))
+        else:
+            return redirect(url_for('lottery.lottery'))
     return render_template('users/login.html', form=form)
 
 
 @users_blueprint.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
+    logging.warning('SECURITY - Log out [%s, %s, %s]',
+                    current_user.id,
+                    current_user.email,
+                    request.remote_addr
+                    )
     logout_user()
+
     session['Login_attempts'] = 0
     return redirect(url_for('index'))
+
 
 @users_blueprint.route('/reset')
 def reset():
     session['Login_attempts'] = 0
     return redirect(url_for('users.login'))
+
 
 # view user account
 @users_blueprint.route('/account')
@@ -136,7 +167,7 @@ def update_password():
 
         current_user.password = form.new_password.data
         db.session.commit()
-        flash ('password change success')
+        flash('password change success')
 
         return redirect(url_for('users.account'))
 

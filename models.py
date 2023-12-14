@@ -1,9 +1,16 @@
 import secrets
 import string
+from datetime import datetime
 
 from app import db, app
 from flask_login import UserMixin
 import pyotp
+from cryptography.fernet import Fernet
+
+import bcrypt
+
+secret_key = Fernet.generate_key()
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -22,6 +29,10 @@ class User(db.Model, UserMixin):
     postcode = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(100), nullable=False, default='user')
     pin_key = db.Column(db.String(32), nullable=True, default=pyotp.random_base32())
+    registered_on = db.Column(db.DateTime, nullable=False)
+    current_login = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+    post_key = db.Column(db.BLOB, nullable=False, default=Fernet.generate_key())
     # Define the relationship to Draw
     draws = db.relationship('Draw')
 
@@ -32,8 +43,11 @@ class User(db.Model, UserMixin):
         self.phone = phone
         self.dob = dob
         self.postcode = postcode
-        self.password = password
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         self.role = role
+        self.registered_on = datetime.now()
+        self.current_login = None
+        self.last_login = None
 
     def get_2fa_uri(self):
         return str(pyotp.totp.TOTP(self.pin_key).provisioning_uri(
@@ -45,9 +59,7 @@ class User(db.Model, UserMixin):
         return pyotp.TOTP(self.pin_key).verify(pin)
 
     def verify_password(self, password):
-        return self.password == password
-
-
+        return bcrypt.checkpw(password.encode('utf-8'), self.password)
 
 # def generate_random_pin_key(length=4):
 #     characters = string.ascii_letters + string.digits
@@ -102,3 +114,9 @@ def init_db():
         db.session.commit()
 
 
+def encrypt(data, post_key):
+    return Fernet(post_key).encrypt(bytes(data, 'utf-8'))
+
+
+def decrypt(data, post_key):
+    return Fernet(post_key).decrypt(data).decode('utf-8')
