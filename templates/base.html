@@ -2,15 +2,21 @@
 <html>
 
 <head>
+    <!-- Meta tags for character set and viewport settings -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Title of the HTML document -->
     <title>CSC2031</title>
+
+    <!-- Link to the Bulma CSS framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
 </head>
 
 <body>
 
+    <!-- Internal CSS styling for table alignment -->
     <style>
     .table {
       margin-left: auto;
@@ -18,19 +24,24 @@
     }
     </style>
 
+    <!-- Hero section with primary color -->
     <section class="hero is-primary is-fullheight">
 
+        <!-- Hero head containing navigation bar -->
         <div class="hero-head">
             <nav class="navbar">
                 <div class="container">
 
+                    <!-- Navbar menu with navigation links -->
                     <div id="navbarMenuHeroA" class="navbar-menu">
                        <div class="navbar-end">
 
+                            <!-- Home link -->
                             <a href="{{ url_for('index') }}" class="navbar-item">
                                Home
                             </a>
 
+                            <!-- Conditional links based on user authentication -->
                             {% if current_user.is_anonymous %}
                                 <a href="{{ url_for('users.register') }}" class="navbar-item">
                                     Register
@@ -49,18 +60,19 @@
                                 </a>
                             {% endif %}
 
+                            <!-- Conditional link for admin role -->
                             {% if current_user.is_authenticated and current_user.role == 'admin' %}
                                 <a href="{{ url_for('admin.admin') }}" class="navbar-item">
                                     Admin
                                 </a>
                             {% endif %}
 
+                            <!-- Conditional link for user role -->
                             {% if current_user.is_authenticated and current_user.role == 'user' %}
                                 <a href="{{ url_for('lottery.lottery') }}" class="navbar-item">
                                     Lottery
                                 </a>
                             {% endif %}
-
 
                        </div>
                     </div>
@@ -68,8 +80,10 @@
             </nav>
         </div>
 
+        <!-- Hero body containing main content -->
         <div class="hero-body">
             <div class="container has-text-centered">
+               <!-- Content block overridden by child templates -->
                {% block content %}
                {% endblock %}
             </div>

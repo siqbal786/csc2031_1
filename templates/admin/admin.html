@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
+        <!-- Include the JavaScript file 'rng.js' from the static folder -->
 <script type="text/javascript" src="{{ url_for('static', filename='rng.js') }}"></script>
+
+        <!-- Header Section -->
 <h3 class="title is-3">Lottery Web Application Admin</h3>
 <h4 class="subtitle is-4">
     Welcome, {{ name }}
 </h4>
 
-
+    <!-- First Column Section -->
 <div class="column is-4 is-offset-4">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
+            <!-- Display flashed messages (if any) -->
             <div class="notification is-danger">
                 {{ messages[0] }}
             </div>
@@ -18,7 +22,7 @@
     {% endwith %}
     <h4 class="title is-4">Lottery</h4>
     <div class="box">
-        {# render play again button if current lottery round has been played #}
+            <!-- Form to generate a new winning draw -->
         <form action="/generate_winning_draw">
             <div>
                 <button class="button is-info is-centered">Generate Winning Draw</button>
@@ -27,15 +31,18 @@
 
     </div>
 </div>
-<div class="column is-4 is-offset-4">
 
+        <!-- Second Column Section -->
+<div class="column is-4 is-offset-4">
     <div class="box">
         {% if winning_draw %}
+            <!-- Display the winning draw if it exists -->
             <div class="field">
                 <p>Round {{ winning_draw.lottery_round }}</p>
                 <p>{{ winning_draw.numbers }}</p>
             </div>
         {% endif %}
+        <!-- Form to view the winning draw -->
         <form action="/view_winning_draw">
             <div>
                 <button class="button is-info is-centered">View Winning Draw</button>
@@ -43,16 +50,19 @@
         </form>
     </div>
 </div>
-<div class="column is-8 is-offset-2">
 
+        <!-- Third Column Section -->
+<div class="column is-8 is-offset-2">
     <div class="box">
         {% if results %}
+            <!-- Display lottery results if available -->
             <div class="field">
                 {% for result in results %}
                     <p>{{ result }}</p>
                 {% endfor %}
             </div>
         {% endif %}
+        <!-- Form to run the lottery -->
         <form action="/run_lottery">
             <div>
                 <button class="button is-info is-centered">Run Lottery</button>
@@ -60,12 +70,13 @@
         </form>
     </div>
 </div>
+
+        <!-- Fourth Column Section -->
 <div class="column is-10 is-offset-1">
-
-
     <h4 class="title is-4">Current Users</h4>
     <div class="box">
         {% if current_users %}
+            <!-- Display a table of current users if available -->
             <div class="field">
                 <table class="table">
                     <tr>
@@ -89,6 +100,7 @@
                 </table>
             </div>
         {% endif %}
+        <!-- Form to view all users -->
         <form action="/view_all_users">
             <div>
                 <button class="button is-info is-centered">View All Users</button>
@@ -97,10 +109,11 @@
     </div>
 </div>
 
-
+    <!-- User Activity Logs Section -->
         <h5 class="title is-4">User Activity Logs</h5>
     <div class="box">
         {% if current_user_logs %}
+            <!-- Display a table of user activity logs if available -->
             <div class="field">
                 <table class="table">
                     <tr>
@@ -126,6 +139,7 @@
             </div>
         {% endif %}
         {% if not current_user_logs %}
+            <!-- Form to view user activity -->
         <form action="/view_user_activity">
             <div>
                 <button class="button is-info is-centered">View User Activity</button>
@@ -134,11 +148,12 @@
         {% endif %}
         </div>
 
-
+    <!-- Fifth Column Section -->
 <div class="column is-8 is-offset-2" id="test">
     <h4 class="title is-4">Security Logs</h4>
     <div class="box">
         {% if logs %}
+            <!-- Display the last 10 security log entries if available -->
             <div class="field">
             <table class="table">
                 <tr>
@@ -151,6 +166,7 @@
                 {% endfor %}
             </table>
         {% endif %}
+        <!-- Form to view security logs -->
         <form action="/logs">
             <div>
                 <button class="button is-info is-centered">View Logs</button>

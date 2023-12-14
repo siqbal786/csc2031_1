@@ -18,6 +18,7 @@ lottery_blueprint = Blueprint('lottery', __name__, template_folder='templates')
 @login_required
 @requires_roles('user')
 def lottery():
+    # Render the lottery page for the authenticated user.
     return render_template('lottery/lottery.html', name=current_user.firstname)
 
 
@@ -26,9 +27,11 @@ def lottery():
 @login_required
 @requires_roles('user')
 def create_draw():
+    # form to handle submission of new lottery draw
     form = DrawForm()
 
     if form.validate_on_submit():
+        # collect form data to create the draw
         submitted_numbers = (str(form.number1.data) + ' '
                           + str(form.number2.data) + ' '
                           + str(form.number3.data) + ' '
@@ -36,6 +39,7 @@ def create_draw():
                           + str(form.number5.data) + ' '
                           + str(form.number6.data))
 
+        # Encrypt the submitted numbers using the user's post key
         encrypted_draw = models.encrypt(submitted_numbers, current_user.post_key)
 
         # create a new draw with the form data.
@@ -62,6 +66,7 @@ def view_draws():
 
     # if playable draws exist
     if len(playable_draws) != 0:
+        # Decrypt the numbers for each playable draw
         for draw in playable_draws:
             make_transient(draw)
             draw.numbers = models.decrypt(draw.numbers, current_user.post_key)
@@ -73,7 +78,7 @@ def view_draws():
         return lottery()
 
 
-# view lottery results
+# check played draws and view lottery results
 @lottery_blueprint.route('/check_draws', methods=['POST'])
 @login_required
 @requires_roles('user')
@@ -83,12 +88,14 @@ def check_draws():
 
     # if played draws exist
     if len(played_draws) != 0:
+        # Decrypt the numbers for each played draw
         for draw in played_draws:
             make_transient(draw)
             draw.numbers = models.decrypt(draw.numbers, current_user.post_key)
+        # Render the lottery page with results
         return render_template('lottery/lottery.html', results=played_draws, played=True)
 
-    # if no played draws exist [all draw entries have been played therefore wait for next lottery round]
+    # if no played draws exist all draw entries have been played therefore wait for next lottery round
     else:
         flash("Next round of lottery yet to play. Check you have playable draws.")
         return lottery()
@@ -99,9 +106,11 @@ def check_draws():
 @login_required
 @requires_roles('user')
 def play_again():
+    # Delete all played draws (excluding master draws)
     Draw.query.filter_by(been_played=True, master_draw=False).delete(synchronize_session=False)
     db.session.commit()
 
+    # Flash message and redirect to the lottery page
     flash("All played draws deleted.")
     return lottery()
 

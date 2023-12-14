@@ -1,83 +1,103 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <!-- Registration Form Section -->
     <div class="column is-5 is-offset-4">
         <h3 class="title is-3">Register</h3>
         <div class="box">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
+                    <!-- Display flashed messages (if any) with a link to the login page -->
                     <div class="notification is-danger">
                         {{ messages[0] }}. Go to <a href="{{ url_for('users.login') }}">login page</a>.
                     </div>
                 {% endif %}
             {% endwith %}
+
+            <!-- Render the registration form -->
             <form method="POST">
+                <!-- Email Field -->
                 <div class="field">
                     {{ form.csrf_token() }}
                     <div class="control">
                         {{ form.email(class="input", placeholder="Email") }}
+                        <!-- Display email validation errors (if any) -->
                         {% for error in form.email.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- First Name Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.firstname(class="input", placeholder="First Name") }}
+                        <!-- Display first name validation errors (if any) -->
                         {% for error in form.firstname.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Last Name Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.lastname(class="input", placeholder="Last Name") }}
+                        <!-- Display last name validation errors (if any) -->
                         {% for error in form.lastname.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Phone Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.phone(class="input", placeholder="Phone") }}
+                        <!-- Display phone validation errors (if any) -->
                         {% for error in form.phone.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Date of Birth Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.dob(class="input", placeholder="Date of Birth") }}
+                        <!-- Display date of birth validation errors (if any) -->
                         {% for error in form.dob.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Postcode Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.postcode(class="input", placeholder="PostCode") }}
+                        <!-- Display postcode validation errors (if any) -->
                         {% for error in form.postcode.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Password Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.password(class="input", placeholder="Password") }}
+                        <!-- Display password validation errors (if any) -->
                         {% for error in form.password.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Confirm Password Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.confirm_password(class="input", placeholder="Confirm Password") }}
+                        <!-- Display confirm password validation errors (if any) -->
                         {% for error in form.confirm_password.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
-
                 </div>
+                <!-- Submit Button -->
                 <div>
                     {{ form.submit(class="button is-info is-centered") }}
                 </div>

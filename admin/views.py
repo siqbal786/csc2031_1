@@ -14,12 +14,16 @@ admin_blueprint = Blueprint('admin', __name__, template_folder='templates')
 # VIEWS
 # view admin homepage
 @admin_blueprint.route('/admin')
+# only logged in users can view function
 @login_required
+# logged in user must have role admin to access function
 @requires_roles('admin')
 def admin():
+    # Check if the current user has the 'admin' role
     if current_user.role == 'admin':
         return render_template('admin/admin.html', name=current_user.firstname)
     else:
+        # Redirect to the lottery page if the current user is not an admin
         return redirect(url_for('lottery.lottery'))
 
 
@@ -33,16 +37,14 @@ def generate_winning_draw():
     current_winning_draw = Draw.query.filter_by(master_draw=True).first()
     lottery_round = 1
 
-    # if a current winning draw exists
+    # if a current winning draw exists update lottery and delete existing draw
     if current_winning_draw:
         # update lottery round by 1
         lottery_round = current_winning_draw.lottery_round + 1
-
-        # delete current winning draw
         db.session.delete(current_winning_draw)
         db.session.commit()
 
-    # get new winning numbers for draw
+    # Generate new winning numbers for the draw
     winning_numbers = random.sample(range(1, 60), 6)
     winning_numbers.sort()
     winning_numbers_string = ''
@@ -57,7 +59,7 @@ def generate_winning_draw():
     db.session.add(new_winning_draw)
     db.session.commit()
 
-    # re-render admin page
+    # flash message and re-render admin page
     flash("New winning draw %s added." % winning_numbers_string)
     return redirect(url_for('admin.admin'))
 
@@ -68,10 +70,10 @@ def generate_winning_draw():
 @requires_roles('admin')
 def view_winning_draw():
 
-    # get winning draw from DB
+    # get current unplayed winning draw from DB
     current_winning_draw = Draw.query.filter_by(master_draw=True,been_played=False).first()
 
-    # if a winning draw exists
+    # If a winning draw exists, render admin page with the details
     if current_winning_draw:
         # re-render admin page with current winning draw and lottery round
         return render_template('admin/admin.html', winning_draw=current_winning_draw, name=current_user.firstname)
@@ -131,12 +133,14 @@ def run_lottery():
                 db.session.add(draw)
                 db.session.commit()
 
-            # if no winners
+            # if no winners flash a message
             if len(results) == 0:
                 flash("No winners.")
 
+            # Render admin page with lottery results
             return render_template('admin/admin.html', results=results, name=current_user.firstname)
 
+        # If no user draws entered, flash a message and redirect to admin page
         flash("No user draws entered.")
         return admin()
 
@@ -150,8 +154,10 @@ def run_lottery():
 @login_required
 @requires_roles('admin')
 def view_all_users():
+    # Get all registered users with the 'user' role
     current_users = User.query.filter_by(role='user').all()
 
+    # Render admin page with the list of users
     return render_template('admin/admin.html', name=current_user.firstname, current_users=current_users)
 
 
@@ -160,10 +166,12 @@ def view_all_users():
 @login_required
 @requires_roles('admin')
 def logs():
+    # Read the last 10 lines from the 'lottery.log' file
     with open("lottery.log", "r") as f:
         content = f.read().splitlines()[-10:]
         content.reverse()
 
+    # Render admin page with log entries
     return render_template('admin/admin.html', logs=content, name=current_user.firstname)
 
 # view user activity
@@ -171,6 +179,8 @@ def logs():
 @login_required
 @requires_roles('admin')
 def view_user_activity():
+    # Get all registered users with the 'user' role
     current_users = User.query.filter_by(role='user').all()
 
+    # Render admin page with user activity details
     return render_template('admin/admin.html', name=current_user.firstname, current_user_logs=current_users)

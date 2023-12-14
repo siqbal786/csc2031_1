@@ -14,4 +14,5 @@ from cryptography.fernet import Fernet
 fernet
 rsa
 bcrypt
+Flask-Talisman
 

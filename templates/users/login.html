@@ -1,40 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <!-- Login Form Section -->
     <div class="column is-5 is-offset-4">
         <h3 class="title is-3">Login</h3>
         <div class="box">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
+                    <!-- Display flashed messages (if any) with a link to the login page -->
                     <div class="notification is-danger">
                         {{ messages[0] }}. Go to <a href="{{ url_for('users.login') }}">login page</a>.
                     </div>
                 {% endif %}
             {% endwith %}
+            <!-- Check if the login form exists -->
         {% if form %}
+            <!-- Render the login form -->
             <form method="POST">
+                <!-- Email Field -->
                 <div class="field">
                     {{ form.csrf_token() }}
                     <div class="control">
                         {{ form.email(class="input", placeholder="Email") }}
+                        <!-- Display email validation errors (if any) -->
                         {% for error in form.email.errors %}
                             {{ error }}
                         {% endfor %}
                     </div>
                 </div>
+                <!-- Password Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.password(class="input", placeholder="Password") }}
                     </div>
                 </div>
+                <!-- PIN Field -->
                 <div class="field">
                     <div class="control">
                         {{ form.pin(class="input", placeholder="PIN") }}
                     </div>
                 </div>
+                <!-- reCAPTCHA Field -->
                 <div>
                     {{ form.recaptcha }}
                 </div>
+                <!-- Submit Button -->
                 <div>
                     {{ form.submit(class="button is-info is-centered") }}
                 </div>

@@ -9,12 +9,14 @@ from cryptography.fernet import Fernet
 
 import bcrypt
 
+# Generate a secret key for encryption using Fernet.
 secret_key = Fernet.generate_key()
 
-
 class User(db.Model, UserMixin):
+    # Define the 'users' table in the database.
     __tablename__ = 'users'
 
+    # Define columns for the 'users' table.
     id = db.Column(db.Integer, primary_key=True)
 
     # User authentication information.
@@ -33,16 +35,19 @@ class User(db.Model, UserMixin):
     current_login = db.Column(db.DateTime, nullable=True)
     last_login = db.Column(db.DateTime, nullable=True)
     post_key = db.Column(db.BLOB, nullable=False, default=Fernet.generate_key())
-    # Define the relationship to Draw
+
+    # Define a relationship to the 'draws' table
     draws = db.relationship('Draw')
 
     def __init__(self, email, firstname, lastname, phone, dob, postcode, password, role):
+        # Initialize new user object.
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
         self.phone = phone
         self.dob = dob
         self.postcode = postcode
+        # Hash the user's password using bcrypt.
         self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         self.role = role
         self.registered_on = datetime.now()
@@ -50,45 +55,47 @@ class User(db.Model, UserMixin):
         self.last_login = None
 
     def get_2fa_uri(self):
+        # Generate a provisioning URI for 2FA using pyotp.
         return str(pyotp.totp.TOTP(self.pin_key).provisioning_uri(
             name=self.email,
             issuer_name='CSC2031 Lottery Web App')
         )
 
     def verify_pin(self, pin):
+        # Verify a PIN using pyotp.
         return pyotp.TOTP(self.pin_key).verify(pin)
 
     def verify_password(self, password):
+        # Verify a password using bcrypt.
         return bcrypt.checkpw(password.encode('utf-8'), self.password)
 
-# def generate_random_pin_key(length=4):
-#     characters = string.ascii_letters + string.digits
-#     return ''.join(secrets.choice(characters) for _ in range(length))
-
 class Draw(db.Model):
+    # Define the 'draws' table in the database.
     __tablename__ = 'draws'
 
+    # Define columns for the 'draws' table.
     id = db.Column(db.Integer, primary_key=True)
 
-    # ID of user who submitted draw
+    # ID of the user who submitted the draw.
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
 
-    # 6 draw numbers submitted
+    # 6 draw numbers submitted by the user.
     numbers = db.Column(db.String(100), nullable=False)
 
-    # Draw has already been played (can only play draw once)
+    # Flag indicating whether the draw has been played.
     been_played = db.Column(db.BOOLEAN, nullable=False, default=False)
 
-    # Draw matches with master draw created by admin (True = draw is a winner)
+    # Flag indicating whether the draw matches with the master draw.
     matches_master = db.Column(db.BOOLEAN, nullable=False, default=False)
 
-    # True = draw is master draw created by admin. User draws are matched to master draw
+    # Flag indicating whether the draw is a master draw created by the admin.
     master_draw = db.Column(db.BOOLEAN, nullable=False)
 
-    # Lottery round that draw is used
+    # Lottery round that the draw is associated with.
     lottery_round = db.Column(db.Integer, nullable=False, default=0)
 
     def __init__(self, user_id, numbers, master_draw, lottery_round):
+        # Initialize a new draw object.
         self.user_id = user_id
         self.numbers = numbers
         self.been_played = False
@@ -96,11 +103,12 @@ class Draw(db.Model):
         self.master_draw = master_draw
         self.lottery_round = lottery_round
 
-
 def init_db():
+    # Initialize the database with initial data.
     with app.app_context():
         db.drop_all()
         db.create_all()
+        # Create an admin user and add it to the database.
         admin = User(email='admin@email.com',
                      password='Admin1!',
                      firstname='Alice',
@@ -109,14 +117,13 @@ def init_db():
                      dob='28/04/1964',
                      postcode='B6 3AL',
                      role='admin')
-
         db.session.add(admin)
         db.session.commit()
 
-
 def encrypt(data, post_key):
+    # Encrypt data using Fernet encryption.
     return Fernet(post_key).encrypt(bytes(data, 'utf-8'))
 
-
 def decrypt(data, post_key):
+    # Decrypt data using Fernet encryption.
     return Fernet(post_key).decrypt(data).decode('utf-8')
